@@ -1,0 +1,661 @@
+---
+title: "Supplemental Information"
+author: Yihao Chen, Li-Na He, Yuanzhe Zhang, Yuelong Shu, Di Zhang, Guangchuang Yu,
+  Zhixiang Zuo
+date: "2024-04-12"
+output:
+  pdf_document: 
+    latex_engine: lualatex
+  html_document:
+    df_print: paged
+  word_document: default
+---
+\newpage
+# 1 Installation
+
+To install tigeR package, please enter the following command in R:
+```{r installation, eval=FALSE}
+if (!requireNamespace("devtools", quietly = TRUE))
+  install.packages("BiocManager")
+devtools::install_github("YuLab-SMU/tigeR")
+devtools::install_github("YuLab-SMU/tigeR.data")
+```
+
+# 2 Evaluating biomarkers associated with immunotherapy response (Figure 3)
+
+To reproduce the analysis in this document, several extra packages should be library.
+
+```{r library, result='hide', message=FALSE, warning=FALSE}
+library(tigeR)
+library(tigeR.data)
+library(ggplot2)
+library(SummarizedExperiment)
+library(patchwork)
+```
+
+```{r fig.3A, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.align='center'}
+fig.3A <-
+  diff_biomk(MEL_PRJEB23709,gene = "CXCL13",type = "Response",
+             p.round=3,p.pos = c(0.05,0.60),textcol="black") +
+  ylim(0,6.2) +
+  ggtitle("MEL-PRJEB23709") +
+  ylab("CXCL13 expression (FPKM)") +
+  theme(legend.position = "none")
+fig.3A
+```
+
+```{r fig.3B, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.align='center'}
+fig.3B <-
+  diff_biomk(MEL_GSE93157,gene = "CXCL13",type = "Response",
+             p.round=3,p.pos = c(0.05,0.355),textcol="black") +
+  ylim(2.1,3.6) +
+  scale_y_continuous(labels = scales::number_format(accuracy = 1)) +
+  ggtitle("MEL-GSE93157") +
+  ylab("CXCL13 expression (FPKM)") +
+  theme(legend.position = "none")
+fig.3B
+```
+
+```{r fig.3C, eval=TRUE, message=FALSE, warning=FALSE,fig.width=3.5,fig.align='center'}
+fig.3C <-
+  roc_biomk(MEL_PRJEB23709,Signature = "CXCL13",textcol = "black",
+            auc.pos = c(0.28,0.4))[[2]] +
+  ggtitle("MEL-PRJEB23709")
+fig.3C
+```
+
+```{r fig.3D, eval=TRUE, message=FALSE, warning=FALSE,fig.width=3.5, fig.align='center'}
+fig.3D <-
+  roc_biomk(MEL_GSE93157,Signature = "CXCL13",textcol = "black",
+            auc.pos=c(0.28,0.4))[[2]] +
+  ggtitle("MEL-GSE93157")
+fig.3D
+```
+
+```{r fig.3E, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.align='center'}
+idx_CTLA <- MEL_GSE115821$Therapy=="anti-PD-1"
+fig.3E <- 
+  diff_biomk(MEL_GSE115821[,MEL_GSE115821$Therapy=="anti-PD-1"],
+             gene = "CXCL13",type = "Treatment",p.round=3,
+             log_sc = TRUE,p.pos = c(0.05,0.60),textcol="black") +
+  ylim(0,6.2) +
+  ggtitle("MEL-GSE115821") +
+  ylab("CXCL13 expression (FPKM)") +
+  theme(legend.position = "none")
+fig.3E
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.align='center'}
+fig.3F <- 
+  diff_biomk(MEL_GSE91061,gene = "CXCL13",type = "Treatment",
+             p.round=3,log_sc = TRUE,p.pos = c(0.05,0.88),textcol="black") +
+  ylim(0,9) +
+  scale_y_continuous(labels = scales::number_format(accuracy = 1)) +
+  ggtitle("MEL-GSE91061") + 
+  ylab("CXCL13 expression (FPKM)") +
+  theme(legend.position = "none")
+fig.3F
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.height=3.5, fig.align='center'}
+fig.3G <- 
+  surv_biomk(MEL_PRJEB23709,gene = "CXCL13",lg.pos=c(0.8,0.92),
+           val.pos = c(0,0.2),lg.text = "specific")$plot +
+  theme(plot.margin = unit(c(3, 1, 1, 1), "lines"),
+        legend.key.height = unit(0,"cm"),
+        legend.key.spacing.y = unit(0,"cm"),
+        legend.key.size = unit(0,"cm")) +
+  ggtitle("MEL-PRJEB23709")
+fig.3G
+```
+
+```{r fig.3H, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.height=3.5, fig.align='center'}
+fig.3H <-
+  surv_biomk(MEL_Nathanson_2017,gene = "CXCL13",lg.pos=c(0.8,0.92),p.round = 3,
+             lg.text = "specific",PT_drop = FALSE)$plot +
+  theme(plot.margin = unit(c(3, 1, 1, 1), "lines"),
+        legend.key.height = unit(0,"cm"),
+        legend.key.spacing.y = unit(0,"cm"),
+        legend.key.size = unit(0,"cm")) +
+  ggtitle("MEL-Nathanson_2017")
+fig.3H
+```
+
+```{r fig.3I, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.height=3.5, fig.align='center'}
+fig.3I <- 
+  surv_biomk(RCC_Braun_2020[,RCC_Braun_2020$Therapy == "anti-PD-1"],
+                 gene = "CXCL13",lg.pos=c(0.8,0.92),p.round = 3,
+                 lg.text = "specific")$plot +
+  theme(plot.margin = unit(c(3, 1, 1, 1), "lines"),
+        legend.key.height = unit(0,"cm"),
+        legend.key.spacing.y = unit(0,"cm"),
+        legend.key.size = unit(0,"cm")) +
+  ggtitle("RCC-Braun_2020")
+fig.3I
+```
+
+```{r fig.3J, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.align='center'}
+fig.3J <- 
+  diff_biomk(MEL_PRJEB23709[,MEL_PRJEB23709$Therapy=="anti-PD-1"],
+           gene=Average_mean_Sigs$TLS,type = "Response",
+           p.round=3,PT_drop = FALSE,p.pos = c(0.05,0.55),
+           textcol = "black") +
+  ylim(0.8,5.6) +
+  ggtitle("MEL-PRJEB23709") +
+  ylab("TLS Signature Score") +
+  theme(legend.position = "none")
+fig.3J
+```
+
+```{r fig.3K, eval=TRUE, message=FALSE, warning=FALSE,fig.width=3.5, fig.align='center'}
+fig.3K <- 
+  roc_biomk(MEL_PRJEB23709[,MEL_PRJEB23709$Therapy=="anti-PD-1"],
+            Signature=Average_mean_Sigs$TLS,PT_drop=FALSE,
+            textcol = "black",auc.pos = c(0.28,0.4))[[2]] +
+  theme(axis.title.y = element_blank(),
+        axis.title.x = element_blank()) +
+  ggtitle("MEL-PRJEB23709")
+fig.3K
+```
+
+```{r fig.3L, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.height=3.5, fig.align='center'}
+fig.3L <-
+  surv_biomk(MEL_PRJEB23709[,MEL_PRJEB23709$Therapy=="anti-PD-1"],
+             gene=Average_mean_Sigs$TLS,PT_drop=FALSE,
+             lg.pos=c(0.8,0.92),p.round = 3,
+             lg.text="specific",lg="TLS")$plot +
+  theme(axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = unit(c(3, 1, 1, 1), "lines"),
+        legend.key.height = unit(0,"cm"),
+        legend.key.spacing.y = unit(0,"cm"),
+        legend.key.size = unit(0,"cm")) +
+  ggtitle("MEL-PRJEB23709")
+fig.3L
+```
+
+```{r fig.3M, eval=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+fig.3M <-
+  compare_biomk(SE=list(MEL_GSE100797,MEL_GSE106128,MEL_GSE115821,
+                        MEL_GSE145996,MEL_GSE78220,MEL_GSE91061,MEL_GSE93157,
+                        MEL_Nathanson_2017,MEL_phs000452,MEL_PRJEB23709),
+                Signature=ipt,method = "Weighted_mean",PT_drop = FALSE) +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+fig.3M
+```
+
+# 3 Identifying tumor microenvironment compositions associated with immunotherapy response (Figure 4)
+Tumor microenvironment analysis is crucial for understanding tumor immune evasion mechanisms and predicting the efficacy of immunotherapy. It provides insights into the interactions between tumor cells, immune cells, and stromal components that influence the anti-tumor immune response and treatment outcomes. Here we analyze the relation between tumor microenvironment and immunotherapy outcome.
+```{r ,eval=FALSE}
+## TIMER
+frac1 <- deconv_TME(MEL_GSE78220,method="TIMER")
+cell1 <- c("T cells CD4","Neutrophil", "Macrophage","mDCs",
+           "B cells", "T cells CD8")
+cell_name_filter(frac1)
+pie1 <- fraction_pie(cell_name_filter(frac1),
+                     feature=factor(cell1, levels = cell1))
+
+## CIBERSORT
+frac2 <- deconv_TME(MEL_GSE78220,method="CIBERSORT")
+  cell2 <- c("DCs resting", "T cells CD8", "T cells CD4 naive",
+           "Macrophages M2", "Yd T cells", "Monocytes",
+           "Mast cells resting", "Neutrophils", "Tregs",
+           "B cells naive")
+pie2 <- fraction_pie(cell_name_filter(frac2[[1]][1:22,]),
+                     feature=factor(cell2, levels = cell2))
+## MCPCounter
+frac3 <- deconv_TME(MEL_GSE78220,method="MCPCounter")
+cell3 <- c("CTLs", "Fibroblasts", "T cells", "mDCs", "Monocytic lineage",
+           "NK cells", "Endothelial cells", "Neutrophils", "CD8 T cells", "B lineage")
+pie3 <- fraction_pie(cell_name_filter(frac3),
+                     feature=factor(cell3, levels = cell3))
+## xCell
+frac4 <- deconv_TME(MEL_GSE78220,method="xCell")
+cell4 <- c("Tgd cells", "CD8+ Tem", "Osteoblast", "Megakaryocytes", "CD8+ Tcm", 
+           "ly Endothelial cells", "Eosinophils", "mv Endothelial cells", 
+           "Endothelial cells", "Smooth muscle")
+pie4 <- fraction_pie(cell_name_filter(frac4),
+                     feature=factor(cell4, levels = cell4))
+## IPS
+frac5 <- deconv_TME(MEL_GSE78220,method="IPS")
+cell5 <- c("IPS", "MHC", "CP", "AZ", "SC", "EC")
+bar5 <- 
+draw_bar(cell_name_filter(frac5),
+         feature=factor(cell5, levels = cell5))
+## EPIC
+frac6 <- deconv_TME(MEL_GSE78220,method="epic")
+cell6 <- c("NKcells", "CD4_Tcells", "CD8_Tcells", "Bcells", "CAFs",
+           "Macrophages", "Endothelial", "otherCells")
+pie6 <- fraction_pie(cell_name_filter(frac6),
+                     feature=factor(cell6, levels = cell6))
+## ESTIMATE
+frac7 <- deconv_TME(MEL_GSE78220,method="ESTIMATE")
+cell7 <- c("StromalScore", "ESTIMATEScore", "TumorPurity", "ImmuneScore")
+bar7 <- draw_bar(cell_name_filter(frac7),
+                 feature=factor(cell7, levels = cell7))
+## ABIS
+frac8 <- deconv_TME(MEL_GSE78220,method="ABIS")
+cell8 <-  c("Macrophages M1", "Plasma cells", "CD4+ T memory activated", 
+            "T cells follicular helper", "DCs activated", "T cells CD8", 
+            "NK cells activated", "Neutrophils", "Tregs", "B cells naive")
+pie8 <- fraction_pie(cell_name_filter(frac8),
+                     feature=factor(cell8, levels = cell8))
+## ConsensusTME
+frac9 <- deconv_TME(MEL_GSE78220,method="ConsensusTME")
+cell9 <- c("T cells CD4", "NK cells", "Yd T cells", "Mast cells",
+           "T cells CD8", "Immune Score", "Tregs", "Plasma cells", 
+           "B cells", "Endothelial")
+pie9 <- fraction_pie(cell_name_filter(frac9),
+                     feature=factor(cell9, levels = cell9))
+## quanTIseq
+frac10 <- deconv_TME(MEL_GSE78220,method="quanTIseq")
+cell10 <- c("Neutrophils", "T cells CD4", "DCs", "Tregs", "Other", "B cells",
+            "Macrophages.M2", "Macrophages.M1", "T cells CD8", "Monocytes")
+pie10 <- fraction_pie(cell_name_filter(frac10),
+                      feature=factor(cell10,levels = cell10))
+bar_IPS <- 
+  gridExtra::grid.arrange(bar5[[1]],bar5[[2]],bar5[[3]],
+                          bar5[[4]],bar5[[5]],bar5[[6]],nrow=1)
+bar_ESTIMATE <- 
+  gridExtra::grid.arrange(bar7[[1]],bar7[[2]],
+                          bar7[[3]],bar7[[4]],nrow=1)
+grob_list <-
+  list(pie1, pie2, pie3, pie4, pie6, pie8, pie9, pie10,
+       bar_IPS, bar_ESTIMATE)
+```
+
+```{r fig.4Adata, eval=TRUE, message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
+## TIMER
+frac1 <- deconv_TME(MEL_GSE78220,method="TIMER")
+cell1 <- c("T cells CD4","Neutrophil", "Macrophage","mDCs",
+           "B cells", "T cells CD8")
+cell_name_filter(frac1)
+pie1 <- fraction_pie(cell_name_filter(frac1),
+                     feature=factor(cell1, levels = cell1))
+
+## CIBERSORT
+frac2 <- deconv_TME(MEL_GSE78220,method="CIBERSORT")
+  cell2 <- c("DCs resting", "T cells CD8", "T cells CD4 naive",
+           "Macrophages M2", "Yd T cells", "Monocytes",
+           "Mast cells resting", "Neutrophils", "Tregs",
+           "B cells naive")
+pie2 <- fraction_pie(cell_name_filter(frac2[[1]][1:22,]),
+                     feature=factor(cell2, levels = cell2))
+## MCPCounter
+frac3 <- deconv_TME(MEL_GSE78220,method="MCPCounter")
+cell3 <- c("CTLs", "Fibroblasts", "T cells", "mDCs", "Monocytic lineage",
+           "NK cells", "Endothelial cells", "Neutrophils", "CD8 T cells", "B lineage")
+pie3 <- fraction_pie(cell_name_filter(frac3),
+                     feature=factor(cell3, levels = cell3))
+## xCell
+frac4 <- deconv_TME(MEL_GSE78220,method="xCell")
+cell4 <- c("Tgd cells", "CD8+ Tem", "Osteoblast", "Megakaryocytes", "CD8+ Tcm", 
+           "ly Endothelial cells", "Eosinophils", "mv Endothelial cells", 
+           "Endothelial cells", "Smooth muscle")
+pie4 <- fraction_pie(cell_name_filter(frac4),
+                     feature=factor(cell4, levels = cell4))
+## IPS
+frac5 <- deconv_TME(MEL_GSE78220,method="IPS")
+cell5 <- c("IPS", "MHC", "CP", "AZ", "SC", "EC")
+bar5 <- 
+draw_bar(cell_name_filter(frac5),
+         feature=factor(cell5, levels = cell5))
+## EPIC
+frac6 <- deconv_TME(MEL_GSE78220,method="epic")
+cell6 <- c("NKcells", "CD4_Tcells", "CD8_Tcells", "Bcells", "CAFs",
+           "Macrophages", "Endothelial", "otherCells")
+pie6 <- fraction_pie(cell_name_filter(frac6),
+                     feature=factor(cell6, levels = cell6))
+## ESTIMATE
+frac7 <- deconv_TME(MEL_GSE78220,method="ESTIMATE")
+cell7 <- c("StromalScore", "ESTIMATEScore", "TumorPurity", "ImmuneScore")
+bar7 <- draw_bar(cell_name_filter(frac7),
+                 feature=factor(cell7, levels = cell7))
+## ABIS
+frac8 <- deconv_TME(MEL_GSE78220,method="ABIS")
+cell8 <-  c("Macrophages M1", "Plasma cells", "CD4+ T memory activated", 
+            "T cells follicular helper", "DCs activated", "T cells CD8", 
+            "NK cells activated", "Neutrophils", "Tregs", "B cells naive")
+pie8 <- fraction_pie(cell_name_filter(frac8),
+                     feature=factor(cell8, levels = cell8))
+## ConsensusTME
+frac9 <- deconv_TME(MEL_GSE78220,method="ConsensusTME")
+cell9 <- c("T cells CD4", "NK cells", "Yd T cells", "Mast cells",
+           "T cells CD8", "Immune Score", "Tregs", "Plasma cells", 
+           "B cells", "Endothelial")
+pie9 <- fraction_pie(cell_name_filter(frac9),
+                     feature=factor(cell9, levels = cell9))
+## quanTIseq
+frac10 <- deconv_TME(MEL_GSE78220,method="quanTIseq")
+cell10 <- c("Neutrophils", "T cells CD4", "DCs", "Tregs", "Other", "B cells",
+            "Macrophages.M2", "Macrophages.M1", "T cells CD8", "Monocytes")
+pie10 <- fraction_pie(cell_name_filter(frac10),
+                      feature=factor(cell10,levels = cell10))
+bar_IPS <- 
+  gridExtra::grid.arrange(bar5[[1]],bar5[[2]],bar5[[3]],
+                          bar5[[4]],bar5[[5]],bar5[[6]],nrow=1)
+bar_ESTIMATE <- 
+  gridExtra::grid.arrange(bar7[[1]],bar7[[2]],
+                          bar7[[3]],bar7[[4]],nrow=1)
+grob_list <-
+  list(pie1, pie2, pie3, pie4, pie6, pie8, pie9, pie10,
+       bar_IPS, bar_ESTIMATE)
+```
+
+```{r fig.4A, eval=TRUE, fig.width=26, fig.height=23}
+gridExtra::grid.arrange(grobs = grob_list, ncol = 1, 
+                        heights = c(1, 1, 1, 1, 1, 1, 1, 1, 2, 2))
+```
+
+```{r fig.4B, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## TIMER
+TM <- deconv_TME(MEL_GSE91061,method = "TIMER")
+TM1 <- cell_name_filter(TM)
+TM_SE <- SummarizedExperiment(assays=SimpleList(TM1),
+                              colData=colData(MEL_GSE91061))
+fig.4B <- browse_biomk(SE=TM_SE)
+fig.4B
+```
+
+```{r fig.4C, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## CIBERSORT
+CISORT <- deconv_TME(MEL_GSE91061,
+                     method="CIBERSORT")
+CISORT1 <- cell_name_filter(CISORT[[1]][1:22,])
+CIBER_SE <- SummarizedExperiment(assays=SimpleList(CISORT1),
+                                 colData=colData(MEL_GSE91061))
+fig.4C <- browse_biomk(SE=CIBER_SE)
+fig.4B
+```
+
+```{r fig.4D, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## MCPCounter
+MCP <- deconv_TME(MEL_GSE91061,
+                  method="MCPCounter")
+MCP1 <- cell_name_filter(MCP)
+MCP_SE <- SummarizedExperiment(assays=SimpleList(MCP1),
+                               colData=colData(MEL_GSE91061))
+fig.4D <- browse_biomk(SE=MCP_SE)
+fig.4D
+```
+
+```{r , eval=TRUE, message=FALSE, warning=FALSE, include=FALSE,cache=TRUE}
+## xCell
+xCl <- deconv_TME(MEL_GSE91061,
+                  method="xCell")
+```
+```{r fig.4E, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+xCl1 <- cell_name_filter(xCl)
+xCl_SE <- SummarizedExperiment(assays=SimpleList(xCl1),
+                               colData=colData(MEL_GSE91061))
+fig.4E <- browse_biomk(SE=xCl_SE)
+fig.4E
+```
+
+```{r fig.4F, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## IPS
+Ips <- deconv_TME(MEL_GSE91061,
+                  method="IPS")
+Ips_SE <- SummarizedExperiment(assays=SimpleList(Ips),
+                               colData=colData(MEL_GSE91061))
+fig.4F <- browse_biomk(SE=Ips_SE)
+fig.4F
+```
+
+```{r fig.4G, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## EPIC
+Epc <- deconv_TME(MEL_GSE91061,
+                  method="epic")
+Epc_SE <- SummarizedExperiment(assays=SimpleList(Epc),
+                               colData=colData(MEL_GSE91061))
+fig.4G <- browse_biomk(SE=Epc_SE)
+fig.4G
+```
+
+```{r fig.4H, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## ESTIMATE
+Est <- deconv_TME(MEL_GSE91061,
+                  method="ESTIMATE")
+Est_SE <- SummarizedExperiment(assays=SimpleList(Est),
+                               colData=colData(MEL_GSE91061))
+fig.4H <- browse_biomk(SE=Est_SE)
+fig.4H
+```
+
+```{r fig.4I, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## ABIS
+Abs <- deconv_TME(MEL_GSE91061,
+                  method="ABIS")
+Abs1 <- cell_name_filter(Abs)
+Abs_SE <- SummarizedExperiment(assays=SimpleList(Abs1),
+                               colData=colData(MEL_GSE91061))
+fig.4I <- browse_biomk(SE=Abs_SE)
+fig.4I
+```
+
+```{r fig.4J, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## ConsensusTME
+CTM <- deconv_TME(MEL_GSE91061,
+                  method="ConsensusTME")
+CTM1 <- cell_name_filter(CTM)
+CTM_SE <- SummarizedExperiment(assays=SimpleList(CTM1),
+                               colData=colData(MEL_GSE91061))
+fig.4J <- browse_biomk(SE=CTM_SE)
+fig.4J
+```
+
+```{r fig.4K, eval=TRUE, message=FALSE, warning=FALSE, width=4}
+## quanTIseq
+qTI <- deconv_TME(MEL_GSE91061,
+                  method="quanTIseq")
+qTI1 <- cell_name_filter(qTI)
+qTI_SE <- SummarizedExperiment(assays=SimpleList(qTI1),
+                               colData=colData(MEL_GSE91061))
+fig.4K <- browse_biomk(SE=qTI_SE)
+fig.4K
+```
+
+```{r fig.4L, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.height=3.5, fig.align='center'}
+## L
+t1 <- surv_biomk(CIBER_SE,gene = "B cells naive",lg.pos=c(0.8,0.92),
+                 val.pos = c(0,0.2),lg.text = "specific",PT_drop = FALSE,
+                 p.round = 3)
+fig.4L <- t1$plot + theme(axis.title.y = element_blank(),
+                        axis.title.x = element_blank(),
+                        plot.margin = unit(c(3, 1, 1, 1), "lines"),
+                        legend.key.height = unit(0,"cm"),
+                        legend.key.spacing.y = unit(0,"cm"),
+                        legend.key.size = unit(0,"cm"))
+fig.4L
+```
+
+```{r fig.4M, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, fig.height=3.5, fig.align='center'}
+## M
+t2 <- surv_biomk(CIBER_SE,gene = "Monocytes",lg.pos=c(0.8,0.92),
+                 val.pos = c(0,0.2),lg.text = "specific",PT_drop = FALSE,
+                 p.round = 3)
+fig.4M <- t2$plot + theme(axis.title.y = element_blank(),
+                     axis.title.x = element_blank(),
+                     plot.margin = unit(c(3, 1, 1, 1), "lines"),
+                     legend.key.height = unit(0,"cm"),
+                     legend.key.spacing.y = unit(0,"cm"),
+                     legend.key.size = unit(0,"cm"))
+fig.4M
+```
+
+# 4 Constructing immunotherapy response prediction model (Figure 5)
+We then construct a prediction Model module for robust immunotherapy response prediction. 
+```{r fig.5data, result='hide',eval=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+library(tigeR)
+library(SummarizedExperiment)
+library(magrittr)
+# Data preparation
+SE_origin <- cbind(MEL_GSE91061,
+                   MEL_phs000452,
+                   MEL_Nathanson_2017)
+
+exp <-
+  dataProcess_SE(data_standardization(SE_origin, type = c(1,2,3,4)),
+                 Signature = NULL,rmBE = TRUE,response_NR=TRUE,
+                 turn2HL=FALSE)
+cf <-
+  dataProcess_SE(data_standardization(SE_origin,type=c(1,2)),
+                        Signature = NULL,rmBE = FALSE,response_NR=TRUE,
+                        turn2HL=FALSE) %>%
+  TIMER_SE(type="SKCM") %>%
+  to1()
+
+sg <-
+  dataProcess_SE(data_standardization(SE_origin,type=c()),
+                 Signature = NULL,rmBE = FALSE,response_NR=TRUE,
+                 turn2HL=FALSE) %>%
+  score_biomk_SE(sg_SE,PT_drop = FALSE) %>%
+  to1()
+
+
+final_SE <- rbind(exp,cf,sg)
+
+set.seed(6)
+idx <- sample(1:275,size=187)
+SE_obj_train <- final_SE[,idx]
+SE_obj_test <- final_SE[,-idx]
+
+
+m <- t(
+  apply(assay(exp)[,idx], 1, function(x){
+    if(length(which(x==0))*5>length(x))
+      return(rep(NA,length(x)))
+    else
+      return(x)
+  }))
+colnames(m) <- colnames(assay(exp)[,idx])
+vars <- na.omit(
+  apply(m,1,var,na.rm=TRUE))
+selected_genes <- names(vars[vars>0.1])
+
+NB_model <- build_Model(SE_obj_train,
+                        Model = "NB",
+                        feature_genes = c(selected_genes,
+                                          rownames(cf),
+                                          rownames(sg)),
+                        rmBE = FALSE,
+                        response_NR = TRUE,
+                        laplace=0)
+
+RF_model <- build_Model(SE_obj_train,
+                        Model = "RF",
+                        feature_genes = c(selected_genes,
+                                          rownames(cf),
+                                          rownames(sg)),
+                        rmBE = FALSE,
+                        response_NR = TRUE)
+
+SVM_model <- build_Model(SE_obj_train,
+                         Model = "SVM",
+                         feature_genes = c(selected_genes,
+                                           rownames(cf),
+                                           rownames(sg)),
+                         rmBE = FALSE,
+                         response_NR = TRUE)
+
+CC_model <- build_Model(SE_obj_train,
+                        Model = "CC",
+                        feature_genes = c(selected_genes,
+                                          rownames(cf),
+                                          rownames(sg)),
+                        rmBE = FALSE,
+                        response_NR = TRUE)
+ADB_model <- build_Model(SE_obj_train,
+                         Model = "ADB",
+                         feature_genes = c(selected_genes,
+                                           rownames(cf),
+                                           rownames(sg)),
+                         rmBE = FALSE,
+                         response_NR = TRUE)
+LGB_model <- build_Model(SE_obj_train,
+                         Model = "LGB",
+                         feature_genes = c(selected_genes,
+                                           rownames(cf),
+                                           rownames(sg)),
+                         rmBE = FALSE,
+                         response_NR = TRUE)
+LGT_model <- build_Model(SE_obj_train,
+                         Model = "LGT",
+                         feature_genes = c(selected_genes,
+                                           rownames(cf),
+                                           rownames(sg)),
+                         rmBE = FALSE,
+                         response_NR = TRUE)
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE,fig.width=3.5,fig.align='center'}
+## B
+pp1=test_Model(NB_model,SE=SE_obj_train)
+pp2=test_Model(SVM_model,SE=SE_obj_train)
+pp3=test_Model(RF_model,SE=SE_obj_train)
+pp4=test_Model(CC_model,SE=SE_obj_train)
+pp5=test_Model(ADB_model,SE=SE_obj_train)
+pp6=test_Model(LGB_model,SE=SE_obj_train)
+pp7=test_Model(LGT_model,SE=SE_obj_train)
+
+fig.5B <-
+  compare_roc(list(pp1[[1]],pp2[[1]],pp3[[1]],
+                   pp4[[1]],pp5[[1]],pp6[[1]],pp7[[1]])) +
+  ggtitle("Train set (n = 187)") +
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"))
+fig.5B
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE,fig.width=3.5,fig.align='center'}
+## C
+p1=test_Model(NB_model,SE=SE_obj_test)
+p2=test_Model(SVM_model,SE=SE_obj_test)
+p3=test_Model(RF_model,SE=SE_obj_test)
+p4=test_Model(CC_model,SE=SE_obj_test)
+p5=test_Model(ADB_model,SE=SE_obj_test)
+p6=test_Model(LGB_model,SE=SE_obj_test)
+p7=test_Model(LGT_model,SE=SE_obj_test)
+
+fig.5C <-
+  compare_roc(list(p1[[1]],p2[[1]],p3[[1]],
+                   p4[[1]],p5[[1]],p6[[1]],p7[[1]])) +
+  ggtitle("Test set (n = 88)") +
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"))
+fig.5C
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE,fig.width=3.5,fig.align='center'}
+## D
+ipt <- RF_model$importance[,1]
+fig.5D <-
+  roc_biomk(SE=MEL_GSE78220,Signature = ipt,
+            method = "Weighted_mean",PT_drop = FALSE,
+            textcol = "black",auc.pos = c(0.28,0.4))[[2]] +
+  ggtitle("MEL-GSE78220")
+fig.5D
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE,fig.width=4, height=3.5, fig.align='center'}
+## E
+fig.5E <-
+  surv_biomk(MEL_GSE78220,gene = ipt, method="Weighted_mean",PT_drop=TRUE,
+             lg.pos=c(0.6,0.98), p.round = 3,lg.text = "specific",
+             lg="Customed Signature")$plot +
+  ggtitle("MEL-GSE78220") +
+  theme(plot.margin = unit(c(3, 1, 1, 1), "lines"),
+        legend.key.height = unit(0,"cm"),
+        legend.key.spacing.y = unit(0,"cm"),
+        legend.key.size = unit(0,"cm"))
+fig.5E
+```
+
+```{r, eval=TRUE, message=FALSE, warning=FALSE, fig.width=9,fig.height=4.5,fig.align='center'}
+## F
+F <-
+  pred_response(SE=MEL_GSE93157,Signature = ipt,
+                method = "Weighted_mean",threshold = 0.8,
+                PT_drop = FALSE,sort_by = "Customed.Signature",
+                group_by = "Customed.Signature",show.real = TRUE,
+                rankscore = FALSE)
+F
